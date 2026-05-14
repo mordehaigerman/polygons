@@ -1,0 +1,19 @@
+name: polygons
+
+services:
+  backend:
+    build:
+      context: ./backend
+    image: polygons-backend:0.1.0
+    container_name: polygons-backend
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      DATABASE_URL: sqlite+aiosqlite:////app/data/polygons.db
+      SLEEP_SECONDS: "5"
+      DEBUG: "false"
+    volumes:
+      # Bind mount so the SQLite file is host-visible for inspection.
+      # production: switch to a named volume (or no volume — the DB lives elsewhere).
+      - ./backend/data:/app/data
+    restart: unless-stopped

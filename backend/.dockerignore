@@ -1,0 +1,32 @@
+# Caches (need ** to match nested directories)
+**/__pycache__
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+**/.pyright
+**/*.egg-info
+
+# Local environment
+.venv
+.env
+.env.*
+.python-version
+
+# Local data — re-created in the container at /app/data
+data/*.db
+data/*.db-journal
+data/*.db-wal
+data/*.db-shm
+
+# Not needed at runtime
+tests
+scripts
+*.md
+
+# VCS / editor / OS noise
+.git
+.gitignore
+.gitattributes
+.vscode
+.idea
+.DS_Store

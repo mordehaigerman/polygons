@@ -1,0 +1,107 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# Least-privilege token. Bump per-job if a step needs to write.
+permissions:
+  contents: read
+
+# Cancel superseded PR runs; never cancel runs on main (in case CI gates a deploy).
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+env:
+  POETRY_VERSION: "2.1.1"
+  POETRY_NO_INTERACTION: "1"
+  PYTHONDONTWRITEBYTECODE: "1"
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+
+jobs:
+  backend:
+    name: backend (lint, typecheck, tests, openapi)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install Poetry
+        run: pipx install "poetry==${{ env.POETRY_VERSION }}"
+
+      - uses: actions/setup-python@v6
+        with:
+          # Pinned via backend/.python-version. Bump there to bump CI.
+          python-version-file: backend/.python-version
+          cache: poetry
+          cache-dependency-path: backend/poetry.lock
+
+      - name: Install dependencies
+        run: poetry sync --no-root
+
+      - name: Install project
+        run: poetry install --only-root
+
+      - name: Lint
+        run: poetry run ruff check .
+
+      - name: Format check
+        run: poetry run ruff format --check .
+
+      - name: Type-check
+        run: poetry run pyright
+
+      - name: Tests
+        run: poetry run pytest -q
+
+      - name: OpenAPI spec is up to date
+        run: |
+          poetry run python scripts/export_openapi.py > openapi.yaml
+          git diff --exit-code openapi.yaml
+
+  frontend:
+    name: frontend (typecheck, lint, tests, build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Enable Corepack
+        # Activates the Yarn version pinned by the `packageManager` field in
+        # frontend/package.json so setup-node can wire up the cache correctly.
+        run: corepack enable
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: yarn
+          cache-dependency-path: frontend/yarn.lock
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Generated API types are up to date
+        run: |
+          yarn generate:api
+          git diff --exit-code src/api/schema.d.ts
+
+      - name: Typecheck
+        run: yarn typecheck
+
+      - name: Lint (eslint + stylistic + react + react-hooks)
+        run: yarn lint
+
+      - name: Tests
+        run: yarn test --run
+
+      - name: Build
+        run: yarn build

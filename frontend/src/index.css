@@ -1,0 +1,8 @@
+@import 'tailwindcss';
+
+/* Allow h-full / 100% height to cascade if a descendant ever opts into it. */
+html,
+body,
+#root {
+  height: 100%;
+}

@@ -1,0 +1,63 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.pyright/
+
+# Node / Yarn
+node_modules/
+dist/
+.vite/
+.eslintcache
+*.tsbuildinfo
+
+# Yarn Berry: keep yarn.lock and .yarnrc.yml, ignore the rest. The `**/`
+# prefix is required because the `.yarn` directory lives under `frontend/`,
+# not at the repo root, and `.yarn/*` (with a slash) would anchor to root.
+**/.yarn/*
+!**/.yarn/patches
+!**/.yarn/plugins
+!**/.yarn/releases
+!**/.yarn/sdks
+!**/.yarn/versions
+.pnp.*
+
+# Editors
+.vscode/
+.idea/
+.cursor/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project data
+backend/data/*.db
+backend/data/*.db-journal
+backend/data/*.db-wal
+backend/data/*.db-shm
+backend/openapi.json.tmp
+
+# Logs
+*.log
+yarn-debug.log*
+yarn-error.log*
+npm-debug.log*
+pnpm-debug.log*
+
+# Env
+.env
+.env.local
+*.env.local
+
+# Coverage
+coverage/
+.coverage
+htmlcov/

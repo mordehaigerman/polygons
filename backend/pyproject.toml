@@ -1,0 +1,76 @@
+[project]
+name = "polygons-api"
+version = "0.1.0"
+description = "Polygons API backend (FastAPI)"
+requires-python = ">=3.12"
+authors = [{ name = "Polygons" }]
+license = { text = "MIT" }
+dependencies = [
+    "fastapi (>=0.136,<1.0)",
+    "uvicorn[standard] (>=0.32,<1.0)",
+    "sqlalchemy[asyncio] (>=2.0.49,<2.1)",
+    "aiosqlite (>=0.20,<1.0)",
+    "alembic (>=1.13,<2.0)",
+]
+
+[build-system]
+requires = ["poetry-core>=2.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+packages = [{ include = "polygons_api", from = "src" }]
+
+[tool.poetry.group.dev.dependencies]
+pytest = ">=8.3,<9.0"
+pytest-asyncio = ">=0.24,<1.0"
+httpx = ">=0.28,<1.0"
+ruff = ">=0.7,<1.0"
+pyright = ">=1.1.380,<2.0"
+pyyaml = ">=6.0,<7.0"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests", "scripts"]
+
+[tool.ruff.lint]
+select = [
+    "E", "W",     # pycodestyle
+    "F",          # pyflakes
+    "I",          # isort
+    "B",          # flake8-bugbear
+    "UP",         # pyupgrade
+    "SIM",        # flake8-simplify
+    "PT",         # flake8-pytest-style
+    "RUF",        # ruff-specific
+]
+ignore = [
+    "B008",       # FastAPI uses Depends() as default arguments
+    "E501",       # ruff format handles line length
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["B011"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.pyright]
+# Strict for our own code; the `reportUnknown*` rules are relaxed because they
+# fire mostly on third-party libraries whose type stubs are incomplete and
+# would otherwise drown signal in noise.
+include = ["src", "tests", "scripts"]
+pythonVersion = "3.12"
+typeCheckingMode = "strict"
+reportMissingTypeStubs = false
+reportUnknownMemberType = false
+reportUnknownArgumentType = false
+reportUnknownVariableType = false
+reportUnknownParameterType = false
+reportUnknownLambdaType = false
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+filterwarnings = ["error"]

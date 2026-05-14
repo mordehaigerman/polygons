@@ -1,0 +1,246 @@
+components:
+  schemas:
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          title: Detail
+          type: array
+      title: HTTPValidationError
+      type: object
+    Health:
+      properties:
+        ok:
+          title: Ok
+          type: boolean
+      required:
+        - ok
+      title: Health
+      type: object
+    NotFoundEnvelope:
+      description: Envelope returned with HTTP 404 when a polygon id does not exist.
+      properties:
+        detail:
+          title: Detail
+          type: string
+        error:
+          title: Error
+          type: string
+        id:
+          title: Id
+          type: integer
+      required:
+        - error
+        - detail
+        - id
+      title: NotFoundEnvelope
+      type: object
+    PolygonIn:
+      properties:
+        name:
+          maxLength: 100
+          minLength: 1
+          title: Name
+          type: string
+        points:
+          items:
+            maxItems: 2
+            minItems: 2
+            prefixItems:
+              - type: number
+              - type: number
+            type: array
+          minItems: 3
+          title: Points
+          type: array
+      required:
+        - name
+        - points
+      title: PolygonIn
+      type: object
+    PolygonOut:
+      properties:
+        id:
+          title: Id
+          type: integer
+        name:
+          title: Name
+          type: string
+        points:
+          items:
+            maxItems: 2
+            minItems: 2
+            prefixItems:
+              - type: number
+              - type: number
+            type: array
+          title: Points
+          type: array
+      required:
+        - id
+        - name
+        - points
+      title: PolygonOut
+      type: object
+    PolygonRenameIn:
+      properties:
+        name:
+          maxLength: 100
+          minLength: 1
+          title: Name
+          type: string
+      required:
+        - name
+      title: PolygonRenameIn
+      type: object
+    ValidationError:
+      properties:
+        ctx:
+          title: Context
+          type: object
+        input:
+          title: Input
+        loc:
+          items:
+            anyOf:
+              - type: string
+              - type: integer
+          title: Location
+          type: array
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
+      required:
+        - loc
+        - msg
+        - type
+      title: ValidationError
+      type: object
+info:
+  summary: Manage polygons drawn over an image.
+  title: Polygons API
+  version: 0.1.0
+openapi: 3.1.0
+paths:
+  /api/polygons:
+    get:
+      operationId: listPolygons
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/PolygonOut'
+                title: Response Listpolygons
+                type: array
+          description: Successful Response
+      summary: List polygons
+      tags:
+        - polygons
+    post:
+      operationId: createPolygon
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PolygonIn'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolygonOut'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Create a polygon
+      tags:
+        - polygons
+  /api/polygons/{polygon_id}:
+    delete:
+      operationId: deletePolygon
+      parameters:
+        - in: path
+          name: polygon_id
+          required: true
+          schema:
+            title: Polygon Id
+            type: integer
+      responses:
+        '204':
+          description: Successful Response
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundEnvelope'
+          description: Polygon not found
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Delete a polygon
+      tags:
+        - polygons
+    patch:
+      operationId: renamePolygon
+      parameters:
+        - in: path
+          name: polygon_id
+          required: true
+          schema:
+            title: Polygon Id
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PolygonRenameIn'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolygonOut'
+          description: Successful Response
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundEnvelope'
+          description: Polygon not found
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Rename a polygon
+      tags:
+        - polygons
+  /health:
+    get:
+      operationId: health
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health'
+          description: Successful Response
+      summary: Liveness probe
+      tags:
+        - health
